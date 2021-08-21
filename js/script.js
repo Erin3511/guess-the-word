@@ -7,8 +7,20 @@ const remainingGuessesSpan = document.querySelector(".remaining span");
 const message = document.querySelector(".message");
 const playAgainButton = document.querySelector(".play-again");
 
-const word = "magnolia";
+let word = "magnolia";
 const guessedLetters = [];
+let remainingGuesses = 8;
+
+const getWord = async function () {
+    const res = await fetch ("https://gist.githubusercontent.com/skillcrush-curriculum/7061f1d4d3d5bfe47efbfbcfe42bf57e/raw/5ffc447694486e7dea686f34a6c085ae371b43fe/words.txt")
+    const words = await res.text ();
+    const wordArray = words.split("\n");
+    const randomIndex = Math.floor(Math.random() * wordArray.length);
+    word = wordArray[randomIndex].trim();
+    symbol(word);
+};
+
+getWord ();
 
 const symbol = function (word) {
     const placeholder = [];
@@ -18,8 +30,6 @@ const symbol = function (word) {
     }
     wordInProgress.innerText = placeholder.join("");
 };
-
-symbol(word);
 
 guessButton.addEventListener("click", function (e) {
     e.preventDefault();
@@ -55,6 +65,7 @@ const makeGuess = function (guess) {
     guessedLetters.push(guess);
     console.log(guessedLetters);
     showGuessedLetters();
+    updateGuessesRemaining (guess);
     updateWordInProgress(guessedLetters);
     }
 };
@@ -84,10 +95,30 @@ const updateWordInProgress = function (guessedLetters) {
     checkForWinner ();
 };
 
+const updateGuessesRemaining = function (guess) {
+    const upperWord = word.toUpperCase();
+    if (!upperWord.includes(guess)) {
+      message.innerText = `Sorry, the word doesn't have the letter ${guess} in it.`;
+      remainingGuesses -= 1;
+    } else {
+      message.innerText = `Good guess! The word has the letter ${guess}.`;
+    }
+  
+    if (remainingGuesses === 0) {
+      message.innerHTML = `GAME OVER! The word was <span class="highlight">${word}</span>.`;
+    } else if (remainingGuesses === 1) {
+      remainingGuessesSpan.innerText = `${remainingGuesses} guess`;
+    } else {
+      remainingGuessesSpan.innerText = `${remainingGuesses} guesses`;
+    }
+  };
+
 const checkForWinner = function () {
     if (word.toUpperCase() === wordInProgress.innerText) {
         message.classList.add("win");
         message.innerHTML = `<p class="highlight"> You're a ROCKSTAR WORD SLEUTH! You guessed correctly - GREAT JOB!</p>`;
     }
 };
+
+
 
